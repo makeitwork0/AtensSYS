@@ -1,0 +1,121 @@
+function checkSheet(spreadsheet, sheetName) {
+  const sheet = spreadsheet.getSheetByName(sheetName);
+  if (!sheet) {
+    Logger.log("Error: Missing sheet - " + sheetName);
+  }
+  return sheet;
+}
+
+function processAttendance() {
+  try {
+    const logSS = SpreadsheetApp.openById("1MihqsgYrni1UDMKDg6y2PsgbABKb18dLDjx-99kefxQ"); // LOGDATA (READ-ONLY)
+    const refSS = SpreadsheetApp.openById("13XzULerj-R8vNOQ1zA7LahCRLcc4qtVWBxPTrCMJ0rQ"); // REFDATA
+    const dataSS = SpreadsheetApp.openById("1dbF6SmYvsj3hLFukhAJjJuvMXNhQqOLJXgATr11GFtE"); // WEEKLY ATTENDANCE
+    const outputSS = SpreadsheetApp.openById("1YMJ1k2gMdBwAMiXWZZ260P3aqZ7zKwB7qNu11RP7pCI"); // OUTPUTDATA (WRITE HERE)
+    const dumpSS = SpreadsheetApp.openById("1xl-rbfwJuJ1t6ObJOnXJhEBOmGX1y3b3y8MlClukKPA"); // DUMPSHEET (Ignored Entries)
+    const absentSS = SpreadsheetApp.openById("1LXreuQzwyRlbE79gqOlkS3iAIm35wKKIGJs1_apZloQ"); // ABSENT_9C
+
+    const logSheet = checkSheet(logSS, "Sheet1");
+    const refSheet = checkSheet(refSS, "Sheet1");
+    const dataSheet = checkSheet(dataSS, "WEEK2");
+    const outputSheet = checkSheet(outputSS, "Sheet1");
+    const dumpSheet = checkSheet(dumpSS, "Sheet1");
+    const absentSheet = checkSheet(absentSS, "Sheet1");
+
+    if (!logSheet || !refSheet || !dataSheet || !outputSheet || !dumpSheet || !absentSheet) {
+      Logger.log("Error: One or more required sheets are missing.");
+      return;
+    }
+
+    const logData = logSheet.getDataRange().getValues();
+    if (logData.length < 2) {
+      Logger.log("No new attendance data found.");
+      return;
+    }
+
+    const refData = refSheet.getDataRange().getValues();
+    const dataValues = dataSheet.getDataRange().getValues();
+    const outputData = outputSheet.getDataRange().getValues();
+    const processedEntries = new Set(outputData.slice(1).map(row => row[0] + "|" + row[1]));
+
+    const cutoffLate = new Date();
+    cutoffLate.setHours(7, 0, 0, 0);
+    const cutoffAbsent = new Date();
+    cutoffAbsent.setHours(7, 30, 0, 0);
+    const dismissalTime = new Date();
+    dismissalTime.setHours(15, 20, 0, 0);
+
+    for (let i = 1; i < logData.length; i++) {
+      const timestamp = new Date(logData[i][0]);
+      const identifier = logData[i][1];
+      const status = logData[i][2];
+      if (status === "Processed" || !identifier || isNaN(timestamp)) continue;
+      
+      const formattedDateTime = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), "M/d/yyyy h:mm:ss a");
+      const logKey = formattedDateTime + "|" + identifier;
+      if (processedEntries.has(logKey)) continue;
+
+      const weekDayIndex = timestamp.getDay();
+      if (weekDayIndex < 1 || weekDayIndex > 5) continue;
+
+      let lrn = "", name = "";
+      for (let j = 1; j < refData.length; j++) {
+        if (refData[j][0] == identifier || refData[j][4] == identifier) {
+          name = refData[j][1];
+          lrn = refData[j][3];
+          break;
+        }
+      }
+      if (!lrn) continue;
+
+      let rowIndex = -1;
+      for (let k = 1; k < dataValues.length; k++) {
+        if (dataValues[k][0] == lrn) {
+          rowIndex = k + 1;
+          break;
+        }
+      }
+      if (rowIndex === -1) continue;
+
+      const dayColumns = { 1: "C", 2: "E", 3: "G", 4: "I", 5: "K" };
+      const columnLetter = dayColumns[weekDayIndex];
+      const columnOut = String.fromCharCode(columnLetter.charCodeAt(0) + 1);
+
+      const inCell = dataSheet.getRange(columnLetter + rowIndex);
+      const outCell = dataSheet.getRange(columnOut + rowIndex);
+      let statusText = "";
+
+      if (!inCell.getValue()) {
+        if (timestamp < cutoffLate) {
+          statusText = "IN";
+        } else if (timestamp >= cutoffLate && timestamp < cutoffAbsent) {
+          statusText = "LATE";
+        } else {
+          statusText = "NEEDS NOTICE";
+        }
+        inCell.setValue(formattedDateTime);
+        outputSheet.appendRow([formattedDateTime, identifier, lrn, name, statusText, "WEEK2"]);
+      } else if (!outCell.getValue() && timestamp < dismissalTime) {
+        outCell.setValue(formattedDateTime);
+        outputSheet.appendRow([formattedDateTime, identifier, lrn, name, "OUT", "WEEK2"]);
+      }
+
+      if (timestamp >= cutoffAbsent) {
+        absentSheet.appendRow([lrn, name, "ABSENT"]);
+      }
+
+      logSheet.getRange(i + 1, 3).setValue("Processed");
+      processedEntries.add(logKey);
+    }
+
+    Logger.log("Attendance processing completed.");
+  } catch (error) {
+    Logger.log("Error: " + error.message);
+  }
+}
+
+function testProcessAttendance() {
+  Logger.log("Running test for processAttendance function...");
+  processAttendance();
+  Logger.log("Test completed.");
+}
