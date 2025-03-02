@@ -1,0 +1,123 @@
+# **Atensense and Atenvault User Manual**
+
+## **Table of Contents**
+
+1. Introduction
+2. System Overview
+3. Device Setup
+4. Operation Guide
+5. Troubleshooting
+6. Maintenance and Safety
+
+---
+
+## **1. Introduction**
+
+Atensense and Atenvault provide an automated solution for student attendance tracking and emergency alerts. This manual will guide users on setting up, operating, and maintaining the devices to ensure optimal performance.
+
+---
+
+## **2. System Overview**
+
+### **Atensense (Classroom Device)**
+
+- Logs student attendance using **RFID** and **fingerprint authentication**.
+- Detects and reports emergencies (earthquake, fire, manual alert).
+- Displays attendance status and emergency alerts on an **ILI9341 TFT display**.
+- Connects via **Wi-Fi** or **mobile data** for real-time data transmission.
+- Stores offline records on an **SD card** when no connection is available.
+
+### **Atenvault (Central Server)**
+
+- Receives and processes attendance data from Atensense.
+- Stores data in **Google Sheets**.
+- Sends **SMS and email alerts** for late and absent students.
+- Maintains a backup system in case of network failures.
+
+---
+
+## **3. Device Setup**
+
+### **3.1 Hardware Setup**
+
+1. **Powering the Devices**
+
+   - Atensense requires a Power outlet or **18650 batteries** as backup.
+   - Atenvault connects to a **standard power outlet**.
+
+2. **Component Connections**
+
+   - **RFID Scanner (PN532)**: Used for student ID scanning.
+   - **Fingerprint Scanner (RS608)**: Used for biometric authentication.
+   - **MPU6050 Sensor**: Detects earthquake movements.
+   - **MQ2 Sensor**: Detects smoke for fire alerts.
+   - **Buzzer**: Sounds alarms for attendance scans and emergencies.
+
+### **3.2 Network Configuration**
+
+1. Connect Atensense to a **Wi-Fi network**.
+2. If Wi-Fi is unavailable, the device switches to **mobile data (SIM800L module)**.
+3. Configure **Google Sheets API** to integrate attendance records.
+
+---
+
+## **4. Operation Guide**
+
+### **4.1 Student Attendance Logging**
+
+1. **RFID Scan**
+
+   - Students tap their **RFID card** on Atensense.
+   - The screen displays the student’s ID and logs the attendance.
+
+2. **Fingerprint Scan**
+
+   - Students place their finger on the scanner for authentication.
+   - The screen confirms identity and logs attendance.
+
+### **4.2 Emergency Alerts**
+
+1. **Automatic Detection**
+
+   - **Earthquake Alert**: If MPU6050 detects unusual motion, Atensense triggers an alert.
+   - **Fire Alert**: If MQ2 detects smoke, the device triggers a buzzer and screen warning.
+
+2. **Manual Activation**
+
+   - A registered user can trigger an emergency alert using a **fingerprint scan**.
+   - The rotary encoder selects the type of emergency before sending an alert.
+
+### **4.3 Data Processing & Notifications**
+
+1. Atensense sends attendance logs to Atenvault.
+2. Atenvault updates **Google Sheets (LOGDATA, REFDATA, OUTPUTDATA)**.
+3. If a student is late or absent, Atenvault sends **SMS and email alerts**.
+
+---
+
+## **5. Troubleshooting**
+
+| Issue                              | Possible Cause                       | Solution                                              |
+| ---------------------------------- | ------------------------------------ | ----------------------------------------------------- |
+| No power /screen flickering        | Battery drained or disconnected      | Check power source and recharge batteries             |
+| No Wi-Fi connection                | Network issue                        | Restart router or use mobile data                     |
+| RFID/Fingerprint not scanning      | Sensor dirty or damaged              | Check power system or restart device                  |
+| Emergency alert not triggering     | Sensor not calibrated                | Recalibrate MPU6050/MQ2                               |
+| Device freezing or slow response   | Firmware or connection issue         | Restart device or update firmware or check connection |
+| Google Sheets not updating         | Internet connection lost             | Check Wi-Fi or mobile data, reconnect manually        |
+| SD card not recording offline data | SD card full or not detected         | Format SD card or replace with a new one              |
+| Buzzer not sounding                | Loose wiring or disabled in settings | Check connections or enable buzzer in settings        |
+
+---
+
+## **6. Maintenance and Safety**
+
+1. **Keep sensors clean** to ensure accurate readings.
+2. **Check power connections regularly** to avoid unexpected shutdowns.
+3. **Avoid exposure to water or dust** to prevent damage.
+4. **Perform routine software updates** to ensure system security.
+
+---
+
+For further assistance, contact the system administrator or technical support.
+
