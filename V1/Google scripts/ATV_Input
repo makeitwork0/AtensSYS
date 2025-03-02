@@ -1,0 +1,38 @@
+function doGet(e) {
+  try {
+    // Ensure the request contains the required parameter
+    if (!e.parameter || !e.parameter.uid) {
+      throw new Error("Missing required parameter: uid");
+    }
+
+    // Get the active sheet
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    if (!sheet) {
+      throw new Error("No active sheet found.");
+    }
+
+    // Extract the UID from the request parameters
+    const uid = e.parameter.uid;
+
+    // Validate the UID (e.g., ensure it's not empty or invalid)
+    if (!uid || typeof uid !== "string" || uid.trim() === "") {
+      throw new Error("Invalid UID provided.");
+    }
+
+    // Append the timestamp and UID to the sheet
+    const timestamp = new Date();
+    sheet.appendRow([timestamp, uid]);
+
+    // Log the action for debugging
+    Logger.log(`Appended row: ${timestamp}, ${uid}`);
+
+    // Return a success response
+    return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) {
+    // Log the error for debugging
+    Logger.log(`Error: ${error.message}`);
+
+    // Return an error response
+    return ContentService.createTextOutput(`Error: ${error.message}`).setMimeType(ContentService.MimeType.TEXT);
+  }
+}
