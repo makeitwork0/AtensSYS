@@ -2,7 +2,7 @@
 # **Atensense and Atenvault: System Description and Components**
 
 ## **System Overview**
-Atensense and Atenvault form an automated student attendance and emergency response system. Atensense is a classroom-based device that logs student attendance using RFID and fingerprint authentication, while Atenvault serves as a central server that processes attendance data, sends notifications, and manages emergency alerts. The system ensures real-time data transmission, high security, and automated notifications through SMS and email.
+Atensense and Atenvault form an automated student attendance and emergency response system. Atensense is a classroom-based device that logs student attendance using RFID and fingerprint authentication, while Atenvault serves as a central server that processes attendance data, sends notifications, and manages emergency alerts. The system ensures real-time data transmission, high security, and automated notifications through SMS and email. Code made with Help of ai
 
 ---
 
