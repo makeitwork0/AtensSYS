@@ -1,0 +1,160 @@
+#include <Wire.h>
+#include <Adafruit_PN532.h>
+#include <TFT_eSPI.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <MPU6050_light.h>
+
+// NFC Pins
+#define PN532_IRQ   (8)
+#define PN532_RESET (9)
+
+// WiFi Credentials
+const char* ssid = "HUAWEI-2.4i-f3sA";  
+const char* password = "1s9LglE3c0qnw1R";
+
+// Google Apps Script URL
+const char* googleScriptURL = "https://script.google.com/macros/s/AKfycbyMuHLMWNsSLQzOTW__XrpZCqYNWhwgo2FsN4lrAqY06D_Jz19EzxRFf9tmEIP1lJmY/exec";
+
+// NFC and TFT Objects
+Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
+TFT_eSPI tft = TFT_eSPI();
+MPU6050 mpu(Wire);
+
+void setup() {
+    Wire.begin();
+    
+    // Initialize TFT Display
+    tft.init();
+    tft.setRotation(3);
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextColor(TFT_WHITE);
+    tft.setTextSize(2);
+
+    // Display header
+    displayHeader();
+    tft.setCursor(10, 40);
+    tft.println("Connecting to WiFi...");
+
+    // Connect to WiFi
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+    }
+
+    // WiFi Connected
+    displayHeader();
+    tft.setCursor(10, 40);
+    tft.println("WiFi Connected!");
+    delay(2000);
+
+    // Initialize NFC
+    nfc.begin();
+    uint32_t versiondata = nfc.getFirmwareVersion();
+    if (!versiondata) {
+        displayHeader();
+        tft.setCursor(10, 40);
+        tft.println("NFC Module Error!");
+        while (1); // Halt if NFC module is not found
+    }
+    nfc.SAMConfig(); // Configure NFC module
+
+    // Initialize MPU6050
+    byte status = mpu.begin();
+    if (status != 0) {
+        displayHeader();
+        tft.setCursor(10, 40);
+        tft.println("MPU6050 Error!");
+        while (1);
+    }
+    mpu.calcOffsets(); // Calibrate MPU6050
+
+    // Ready to scan
+    displayHeader();
+    tft.setCursor(10, 40);
+    tft.println("Scan RFID...");
+}
+
+void loop() {
+    scanRFID(); // Continuously scan for RFID tags
+    detectEarthquake(); // Check for sudden movements
+}
+
+void scanRFID() {
+    uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 }; // Buffer to store UID
+    uint8_t uidLength; // Length of the UID
+
+    // Check if an RFID tag is detected
+    if (nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength)) {
+        uint32_t rfid = 0;
+        for (uint8_t i = 0; i < uidLength; i++) {
+            rfid = (rfid << 8) | uid[i];
+        }
+
+        // Display RFID on TFT
+        displayHeader();
+        tft.setCursor(10, 40);
+        tft.println("RFID Detected:");
+        tft.setCursor(10, 70);
+        tft.println(rfid);
+
+        // Send RFID to Google Sheets
+        sendToGoogleSheet("RFID", rfid);
+    }
+}
+
+void detectEarthquake() {
+    mpu.update();
+    float acceleration = sqrt(sq(mpu.getAccX()) + sq(mpu.getAccY()) + sq(mpu.getAccZ()));
+    
+    if (acceleration > 1.5) { // Threshold for earthquake detection
+        displayHeader();
+        tft.setCursor(10, 40);
+        tft.println("Earthquake Detected!");
+        sendToGoogleSheet("EARTHQUAKE", 0); // Send alert to Google Sheets
+        delay(3000);
+    }
+}
+
+void sendToGoogleSheet(String type, uint32_t value) {
+    if (WiFi.status() == WL_CONNECTED) {
+        HTTPClient http;
+        String url = String(googleScriptURL) + "?type=" + type + "&value=" + String(value);
+
+        http.begin(url);
+        int httpResponseCode = http.GET();
+
+        if (httpResponseCode > 0) {
+            displayHeader();
+            tft.setCursor(10, 40);
+            tft.println("Response Recorded");
+            delay(2000);
+        } else {
+            displayHeader();
+            tft.setCursor(10, 40);
+            tft.println("Send Failed!");
+            delay(2000);
+        }
+
+        http.end(); // Free resources
+    } else {
+        displayHeader();
+        tft.setCursor(10, 40);
+        tft.println("WiFi Disconnected!");
+        delay(2000);
+    }
+
+    // Reset display for next scan
+    displayHeader();
+    tft.setCursor(10, 40);
+    tft.println("Scan RFID...");
+}
+
+void displayHeader() {
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(10, 10);
+    tft.setTextSize(2);
+    tft.setTextColor(TFT_YELLOW);
+    tft.println("AtenSenseV1");
+    tft.setTextColor(TFT_WHITE);
+}
