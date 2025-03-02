@@ -8,16 +8,16 @@ function checkSheet(spreadsheet, sheetName) {
 
 function processAttendance() {
   try {
-    const logSS = SpreadsheetApp.openById("1MihqsgYrni1UDMKDg6y2PsgbABKb18dLDjx-99kefxQ"); // LOGDATA (READ-ONLY)
-    const refSS = SpreadsheetApp.openById("13XzULerj-R8vNOQ1zA7LahCRLcc4qtVWBxPTrCMJ0rQ"); // REFDATA
-    const dataSS = SpreadsheetApp.openById("1dbF6SmYvsj3hLFukhAJjJuvMXNhQqOLJXgATr11GFtE"); // WEEKLY ATTENDANCE
-    const outputSS = SpreadsheetApp.openById("1YMJ1k2gMdBwAMiXWZZ260P3aqZ7zKwB7qNu11RP7pCI"); // OUTPUTDATA (WRITE HERE)
-    const dumpSS = SpreadsheetApp.openById("1xl-rbfwJuJ1t6ObJOnXJhEBOmGX1y3b3y8MlClukKPA"); // DUMPSHEET (Ignored Entries)
-    const absentSS = SpreadsheetApp.openById("1LXreuQzwyRlbE79gqOlkS3iAIm35wKKIGJs1_apZloQ"); // ABSENT_9C
+    const logSS = SpreadsheetApp.openById("placegooglesheetidhere"); // LOGDATA (READ-ONLY)
+    const refSS = SpreadsheetApp.openById("placegooglesheetidhere"); // REFDATA
+    const dataSS = SpreadsheetApp.openById("placegooglesheetidhere"); // WEEKLY ATTENDANCE
+    const outputSS = SpreadsheetApp.openById("placegooglesheetidhere"); // OUTPUTDATA (WRITE HERE)
+    const dumpSS = SpreadsheetApp.openById("placegooglesheetidhere"); // DUMPSHEET (Ignored Entries)
+    const absentSS = SpreadsheetApp.openById("placegooglesheetidhere"); // ABSENT_9C
 
     const logSheet = checkSheet(logSS, "Sheet1");
     const refSheet = checkSheet(refSS, "Sheet1");
-    const dataSheet = checkSheet(dataSS, "WEEK2");
+    const dataSheet = checkSheet(dataSS, "WEEK2"); // make a WEEK1 And WEEK2 sheet in WEEKLY
     const outputSheet = checkSheet(outputSS, "Sheet1");
     const dumpSheet = checkSheet(dumpSS, "Sheet1");
     const absentSheet = checkSheet(absentSS, "Sheet1");
