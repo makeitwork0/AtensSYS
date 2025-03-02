@@ -10,11 +10,11 @@
 #define PN532_RESET (9)
 
 // WiFi Credentials
-const char* ssid = "HUAWEI-2.4i-f3sA";  
-const char* password = "1s9LglE3c0qnw1R";
+const char* ssid = "wifiname";  
+const char* password = "wifipassword";
 
 // Google Apps Script URL
-const char* googleScriptURL = "https://script.google.com/macros/s/AKfycbyMuHLMWNsSLQzOTW__XrpZCqYNWhwgo2FsN4lrAqY06D_Jz19EzxRFf9tmEIP1lJmY/exec";
+const char* googleScriptURL = "placehere";
 
 // NFC and TFT Objects
 Adafruit_PN532 nfc(PN532_IRQ, PN532_RESET);
